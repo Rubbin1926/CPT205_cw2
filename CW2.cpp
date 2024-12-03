@@ -7,12 +7,32 @@
 using namespace std;
 
 float carCenterX = 0.0f;
+float carCenterY = 0.0f;
 float carCenterZ = 0.0f;
 float carXspeed = 0.0f;
+float carYspeed = 0.0f;
 float carZspeed = 0.0f;
 bool carTurnLeft = false;
 bool carTurnRight = false;
+bool crashed = false;
+float startHeight = 10.0;
+
 int frameRate = 60; // Desired frame rate (frames per second)
+
+float fltFOV = 70; //Field Of View
+float fltZoom = 1.0; //Zoom amount
+float fltX0 = -3.0; //Camera position
+float fltY0 = 3.0;
+float fltZ0 = -3.0;
+float fltXRef = 0.0; //Look At reference point
+float fltYRef = 0.0;
+float fltZRef = 0.0;
+float fltXUp = 0.0; //Up vector
+float fltYUp = 1.0;
+float fltZUp = 0.0;
+float fltViewingAngle = 1;
+int fltMode = 0;
+
 
 void setupLightingAndMaterial(float red, float green, float blue) {
     glEnable(GL_LIGHTING);
@@ -151,12 +171,14 @@ void drawEZCube(float width, float height, float depth, float centerX, float cen
 }
 
 void drawCar(float size, float centerX, float centerY, float centerZ, float red, float green, float blue) {
-    //setupLightingAndMaterial(red, green, blue);
+    setupLightingAndMaterial(red, green, blue);
 
     float wheel_size = 1.0 * size;
-    float distance = centerX;
+    float distance = carCenterX;
 
     glEnable(GL_LIGHTING);
+
+    // Car body
     drawEZCube(1.0 * size, 0.2 * size, 0.6 * size, centerX, centerY, centerZ, red, green, blue);
 
     // Draw wheels in cube
@@ -184,17 +206,52 @@ void drawCar(float size, float centerX, float centerY, float centerZ, float red,
     glEnd();
 }
 
+void drawGround(float centerX, float centerY, float centerZ) {
+    float groundWidth = 500.0;
+    float groundHeight = 0.5;
+    float groundDepth = 500.0;
+    float r = 0.15;
+    float g = 0.1;
+    float b = 0.15;
+    drawCube(groundWidth, groundHeight, groundDepth, centerX, centerY, centerZ, 0.0, 0.0, 0.0, r, g, b);
+}
+
+void drawDashedLine(float centerX, float centerY, float centerZ) {
+    float LineWidth = 0.6;
+    float LineHeight = 0.1;
+    float LineDepth = 0.05;
+    float r = 0.9;
+    float g = 0.9;
+    float b = 0.9;
+    for (float X = -250.0; X < 250.0; X += 1.5) {
+        drawCube(LineWidth, LineHeight, LineDepth, X + centerX, centerY - LineHeight / 2, centerZ, 0.0, 0.0, 0.0, r, g, b);
+    }
+}
+
+void drawScene(float centerX, float centerY, float centerZ) {
+    float groundX = centerX;
+    float groundY = centerY - startHeight;
+    float groundZ = centerZ;
+
+    drawGround(groundX, groundY, groundZ);
+    drawDashedLine(groundX, groundY, groundZ - 1.0);
+    drawDashedLine(groundX, groundY, groundZ + 1.0);
+
+
+    drawEZCube(0.2, 0.2, 0.2, groundX, groundY, groundZ, 0.0, 0.0, 1.0); // For background Test
+}
+
 void initLighting() {
     // First point light source
-    GLfloat light_position0[] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat light_diffuse0[] = { 1.0, 1.0, 1.0, 1.0 }; // White light
+    GLfloat light_position0[] = { -1.0, 1.0, 0.0, 1.0 };
+    GLfloat light_diffuse0[] = { 0.0, 1.0, 0.0, 1.0 };
     glEnable(GL_LIGHT0);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse0);
 
     // Second point light source
-    GLfloat light_position1[] = { -2.0, 2.0, 0.0, 1.0 };
-    GLfloat light_diffuse1[] = { 0.0, 1.0, 0.0, 1.0 }; // Green light
+    GLfloat light_position1[] = { -1.0, 1.0, 0.0, 1.0 };
+    GLfloat light_diffuse1[] = { 0.0, 1.0, 0.0, 1.0 };
     glEnable(GL_LIGHT1);
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse1);
@@ -202,23 +259,43 @@ void initLighting() {
     glEnable(GL_LIGHTING);
 }
 
+void handlefltMode() {
+    switch (fltMode) {
+    case 0:
+        fltMode = 1;
+        break;
+    case 1:
+        fltMode = 0;
+        break;
+    }
+}
+
 void handleKeypress(unsigned char key, int x, int y) {
     switch (key) {
-    case 'w':
+    case 'e':
         carXspeed += 0.02f;
         carXspeed = min(carXspeed, 0.2f);
         break;
-    case 's':
+    case 'd':
         carXspeed -= 0.02f;
         carXspeed = max(carXspeed, -0.2f);
         break;
-    case 'a':
+    case 's':
         carZspeed -= 0.02f;
         carZspeed = min(carZspeed, 0.2f);
         break;
-    case 'd':
+    case 'f':
         carZspeed += 0.02f;
         carZspeed = max(carZspeed, -0.2f);
+        break;
+    case 'a':
+        carYspeed += 0.0005f;
+        break;
+    case 'z':
+        carYspeed -= 0.005f;
+        break;
+    case ' ':
+        handlefltMode();
         break;
     }
 
@@ -247,20 +324,63 @@ void update(int value) {
         carTurnLeft = true;
     }
 
+    if (carCenterY > -startHeight + 0.1) {
+        carYspeed -= 0.00005f;
+    }
+
+    if (carCenterY < -startHeight + 0.1) {
+        carCenterY = -startHeight + 0.1;
+        carYspeed = - 0.1 * carYspeed;
+    }
+
     if (abs(carXspeed) < 0.005f) { carXspeed = 0; };
-    if (abs(carZspeed) < 0.005f) { 
-        carZspeed = 0; 
+    if (abs(carZspeed) < 0.005f) {
+        carZspeed = 0;
         carTurnRight = false;
         carTurnLeft = false;
     };
+    if (abs(carYspeed) < 0.1 * 0.00005f) { carYspeed = 0; };
 
     carCenterX += carXspeed;
     carCenterZ += carZspeed;
+    carCenterY += carYspeed;
 
+    std::cout << "__________" << endl;
+    std::cout << carXspeed << endl;
+    std::cout << carZspeed << endl;
+    std::cout << carYspeed << endl;
 
-    cout << "__________" << endl;
-    cout << carXspeed << endl;
-    cout << carZspeed << endl;
+    switch (fltMode) {
+    case 0:
+        fltFOV = 70; //Field Of View
+        fltZoom = 1.0; //Zoom amount
+        fltX0 = -3.0; //Camera position
+        fltY0 = 3.0;
+        fltZ0 = -3.0;
+        fltXRef = 0.0; //Look At reference point
+        fltYRef = 0.0;
+        fltZRef = 0.0;
+        fltXUp = 0.0; //Up vector
+        fltYUp = 1.0;
+        fltZUp = 0.0;
+        fltViewingAngle = 1;
+        break;
+    case 1:
+        fltFOV = 70; //Field Of View
+        fltZoom = 1.0; //Zoom amount
+        fltX0 = 0.5; //Camera position
+        fltY0 = 0.5;
+        fltZ0 = 0.0;
+        fltXRef = 500.0; //Look At reference point
+        fltYRef = 0.5;
+        fltZRef = 0.0;
+        fltXUp = 0.0; //Up vector
+        fltYUp = 1.0;
+        fltZUp = 0.0;
+        fltViewingAngle = 1;
+        break;
+    }
+
 
     glutPostRedisplay();
     glutTimerFunc(1000 / frameRate, update, 0); // Call update function after 1/frameRate seconds
@@ -269,20 +389,31 @@ void update(int value) {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    drawCar(1.0, carCenterX, 0.0, carCenterZ, 0.5, 0.5, 0.5);
+    drawScene(0.0 - carCenterX, 0.0 - carCenterY, 0.0 - carCenterZ);
+    drawCar(1.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
     drawEZCube(0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(fltFOV, 1, 1, 100);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(fltX0 * fltZoom, fltY0 * fltZoom, fltZ0 * fltZoom, fltXRef, fltYRef, fltZRef, fltXUp, fltYUp, fltZUp);
+    //glEnable(GL_LIGHTING);
+    //glEnable(GL_LIGHT0);
+    //glEnable(GL_LIGHT1);
 
     glutSwapBuffers();
 }
 
 void init() {
     glClearColor(0.0, 0.0, 0.15, 1.0);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45.0, 1.0, 1.0, 100.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(-3.0, 3.0, -3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    //glMatrixMode(GL_PROJECTION);
+    //glLoadIdentity();
+    //gluPerspective(45.0, 1.0, 1.0, 100.0);
+    //glMatrixMode(GL_MODELVIEW);
+    //glLoadIdentity();
+    //gluLookAt(-3.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 }
 
 int main(int argc, char** argv) {
@@ -302,3 +433,9 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+
+// 光照
+// 坠毁测试
+// 背景换位置，开始降落总不能在跑道上
+// 仪表盘，旋转长方形就行
+// 飞机，可考虑螺旋桨，不用画圆
