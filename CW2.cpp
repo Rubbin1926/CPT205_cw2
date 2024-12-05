@@ -15,24 +15,24 @@ GLint pixellength0, pixellength1;
 vector<GLubyte*>p;  // Similar to GLubyte* for program 3 but for 2 images (so a vector) 
 GLuint texture[2];
 
-float planeWheelSize = 0.15f;
-float planeSizeX = 2.0f; 
-float planeSizeY = 0.2f;
-float planeSizeZ = 0.2f;
+float planeWheelSize = 2.0f;
+float planeSizeX = 20.0f; 
+float planeSizeY = 2.0f;
+float planeSizeZ = planeSizeY;
 float planeCenterX = 0.0f;
 float planeCenterY = 0.0f;
 float planeCenterZ = 0.0f;
-float planeXspeed = 3.0f;
+float planeXspeed = 30.0f;
 float planeYspeed = 0.0f;
 float planeZspeed = 0.0f;
 bool planeTurnLeft = false;
 bool planeTurnRight = false;
 bool crashed = false;
-float startHeight = 10.0;
+float startHeight = 88.0f;
 
-float groundX = 5000.0;
-float groundY = 0.02;
-float groundZ = 500.0;
+float groundX = 50000.0f;
+float groundY = 0.2f;
+float groundZ = 50000.0f;
 
 int frameRate = 60; // Desired frame rate (frames per second)
 
@@ -109,12 +109,35 @@ void initLighting() {
     glEnable(GL_LIGHT1);
 }
 
-void drawCube(float width, float height, float depth, float centerX, float centerY, float centerZ, float xAngle, float yAngle, float zAngle, float red, float green, float blue, GLuint Texture) {
+void drawCylinder(float down_radius, float top_radius, float height, float centerX, float centerY, float centerZ, float xAngle, float yAngle, float zAngle, float red, float green, float blue, GLuint Texture) {
+    setupMaterial(red, green, blue);
+    glPushMatrix();
+    glTranslatef(centerX, centerY, centerZ);
+    glRotatef(xAngle / M_PI * 180, 1.0f, 0.0f, 0.0f);
+    glRotatef(yAngle / M_PI * 180, 0.0f, 1.0f, 0.0f);
+    glRotatef(zAngle / M_PI * 180, 0.0f, 0.0f, 1.0f);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, Texture);
+
+    GLUquadricObj* cylinder = gluNewQuadric();
+    gluQuadricNormals(cylinder, GLU_SMOOTH);
+    gluQuadricOrientation(cylinder, GLU_OUTSIDE);
+    gluQuadricTexture(cylinder, GL_TRUE);
+    gluQuadricDrawStyle(cylinder, GLU_FILL);
+    gluCylinder(cylinder, down_radius, top_radius, height, 20, 20);
+
+    glDisable(GL_TEXTURE_2D);
+
+    glPopMatrix();
+}
+
+void drawCube(float X_length, float Y_length, float Z_length, float centerX, float centerY, float centerZ, float xAngle, float yAngle, float zAngle, float red, float green, float blue, GLuint Texture) {
     setupMaterial(red, green, blue);
 
-    float halfWidth = width / 2.0;
-    float halfHeight = height / 2.0;
-    float halfDepth = depth / 2.0;
+    float halfWidth = X_length / 2.0;
+    float halfHeight = Y_length / 2.0;
+    float halfDepth = Z_length / 2.0;
 
     // Calculate the vertices of the parallelepiped based on the center position
     float vertices[8][3] = {
@@ -253,30 +276,44 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
     glEnable(GL_LIGHTING);
 
     // Plane body
-    drawCube(planeSizeX * size, planeSizeY * size, planeSizeZ * size, centerX, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue, texture[0]);
-    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * size, centerX + planeSizeX * 0.3, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue, 0);
-    drawCube(planeSizeX * 0.05 * size, planeSizeY * 0.2 * size, planeSizeX * 0.3 * size, centerX - planeSizeX * 0.45, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue, 0);
-    drawCube(planeSizeX * 0.05 * size, planeSizeY * 1.0 * size, planeSizeZ * 0.3 * size, centerX - planeSizeX * 0.45, centerY + planeSizeY * 0.5, centerZ, 0.0, 0.0, 0.0, red, green, blue, 0);
+    //drawCube(planeSizeX * size, planeSizeY * size, planeSizeZ * size, centerX, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue, texture[0]);
+    drawCylinder(planeSizeY, 0, planeSizeX * 0.6, planeSizeX, 0.0, 0.0, 0.0, M_PI / 2, 0.0, 0.0, 0.0, 0.0, texture[0]);
+    drawCylinder(planeSizeY, planeSizeY, planeSizeX, 0.0, 0.0, 0.0, 0.0, M_PI / 2, 0.0, 0.0, 0.0, 0.0, texture[0]);
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.66 * size, centerX + planeSizeX * 0.5, centerY, centerZ - planeSizeZ * 1.7, 0.0, M_PI / 4, 0.0, red, green, blue, texture[1]);
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.66 * size, centerX + planeSizeX * 0.5, centerY, centerZ + planeSizeZ * 1.7, 0.0, -M_PI / 4, 0.0, red, green, blue, texture[1]);
+
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ - planeSizeZ * 1.0, 0.0, M_PI / 4, 0.0, red, green, blue, texture[1]);
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ + planeSizeZ * 1.0, 0.0, -M_PI / 4, 0.0, red, green, blue, texture[1]);
+
+    //drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * size, centerX + planeSizeX * 0.3, centerY, centerZ, 0.0, M_PI / 4, 0.0, red, green, blue, 0);
+    //drawCube(planeSizeX * 0.05 * size, planeSizeY * 0.2 * size, planeSizeX * 0.3 * size, centerX - planeSizeX * 0.45, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue, 0);
+    //drawCube(planeSizeX * 0.05 * size, planeSizeY * 1.0 * size, planeSizeZ * 0.3 * size, centerX - planeSizeX * 0.45, centerY + planeSizeY * 0.5, centerZ, 0.0, 0.0, 0.0, red, green, blue, 0);
+
 
     // Draw wheels in cube
     float rotateZ = 1.0;
     float rotateYangle = 0.0;
-    if (planeTurnLeft == true && planeTurnRight == false) {
+    bool onGroundEZ = (planeCenterY <= -startHeight + groundY / 2.0f + planeWheelSize / 1.0f + planeSizeY * 1.5f);
+    if (planeTurnLeft == true && planeTurnRight == false && onGroundEZ) {
         rotateYangle = M_PI / 4;
         rotateZ = 0.0;
     };
-    if (planeTurnLeft == false && planeTurnRight == true) {
+    if (planeTurnLeft == false && planeTurnRight == true && onGroundEZ) {
         rotateYangle = -M_PI / 4;
         rotateZ = 0.0;
     };
-    if (planeTurnLeft == false && planeTurnRight == false) {
+    if (planeTurnLeft == false && planeTurnRight == false && onGroundEZ) {
         rotateYangle = 0.0;
         rotateZ = 1.0;
     };
+    if (!onGroundEZ) {
+        rotateYangle = 0.0;
+        rotateZ = 0.0;
+    }
 
-    drawCube(planeWheelSize * size, planeWheelSize * size, 0.05 * size, +planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, -planeSizeX * 0.3 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2, 0);
-    drawCube(planeWheelSize * size, planeWheelSize * size, 0.05 * size, +planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, +planeSizeX * 0.3 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2, 0);
-    drawCube(planeWheelSize * size, planeWheelSize * size, 0.05 * size, -planeSizeX * 0.5 * size + centerX, -planeSizeY * 0.5 * size + centerY, 0.0, 0.0, 0.0, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2, 0);
+    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, +planeSizeX * 0.55 * size + centerX, -planeSizeY * 0.5 * size - planeWheelSize + centerY, -planeSizeX * 0.25 * size + centerZ, 0.0, rotateYangle, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
+    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, +planeSizeX * 0.55 * size + centerX, -planeSizeY * 0.5 * size - planeWheelSize + centerY, planeSizeX * 0.25 * size + centerZ, 0.0, rotateYangle, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
+    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, planeSizeX * 0.99 * size + centerX, -(planeSizeY) * 0.5 * size - planeWheelSize + centerY, 0.0, 0.0, 0.0, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
 
     glEnd();
 }
@@ -289,13 +326,13 @@ void drawGround(float centerX, float centerY, float centerZ) {
 }
 
 void drawDashedLine(float centerX, float centerY, float centerZ) {
-    float LineX = 0.6;
-    float LineY = 0.11;
-    float LineZ = 0.05;
+    float LineX = 6.0;
+    float LineY = 1.1;
+    float LineZ = 0.5;
     float r = 0.9;
     float g = 0.9;
     float b = 0.9;
-    for (float X = 0.0f; X < groundX / 2.0f; X += 1.5) {
+    for (float X = 0.0f; X < groundX / 2.0f; X += 15.0f) {
         drawCube(LineX, LineY, LineZ, X + centerX, centerY, centerZ, 0.0, 0.0, 0.0, r, g, b, 0);
     }
 }
@@ -306,11 +343,11 @@ void drawScene(float centerX, float centerY, float centerZ) {
     float groundZ = centerZ;
 
     drawGround(groundX, groundY, groundZ);
-    drawDashedLine(groundX, groundY, groundZ - 1.0);
-    drawDashedLine(groundX, groundY, groundZ + 1.0);
+    drawDashedLine(groundX, groundY, groundZ - planeSizeZ * 3);
+    drawDashedLine(groundX, groundY, groundZ + planeSizeZ * 3);
 
 
-    drawEZCube(0.2, 0.2, 0.2, groundX, groundY, groundZ, 0.0, 0.0, 1.0, 0); // For background Test
+    drawEZCube(2.0, 2.0, 2.0, groundX, groundY, groundZ, 0.0, 0.0, 1.0, 0); // For background Test
 }
 
 void handlefltMode() {
@@ -327,28 +364,28 @@ void handlefltMode() {
 void handleKeypress(unsigned char key, int x, int y) {
     switch (key) {
     case 'e':
-        planeXspeed += 0.02f;
-        planeXspeed = min(planeXspeed, 0.2f);
+        planeXspeed += 0.2f;
+        planeXspeed = min(planeXspeed, 2.0f);
         break;
     case 'd':
-        planeXspeed -= 0.02f;
-        planeXspeed = max(planeXspeed, -0.2f);
+        planeXspeed -= 0.2f;
+        planeXspeed = max(planeXspeed, -2.0f);
         break;
     case 's':
-        planeZspeed -= 0.002f;
-        planeZspeed = min(planeZspeed, 0.2f);
+        planeZspeed -= 0.02f;
+        planeZspeed = min(planeZspeed, 2.0f);
         break;
     case 'f':
-        planeZspeed += 0.002f;
-        planeZspeed = max(planeZspeed, -0.2f);
+        planeZspeed += 0.02f;
+        planeZspeed = max(planeZspeed, -2.0f);
         break;
     case 'a':
         if (planeXspeed >= 0) {
-            planeYspeed += 0.001f;
+            planeYspeed += 0.01f;
         }
         break;
     case 'z':
-        planeYspeed -= 0.01f;
+        planeYspeed -= 0.1f;
         break;
     case ' ':
         handlefltMode();
@@ -376,53 +413,53 @@ void update(int value) {
         planeXspeed += 0.01f * abs(planeXspeed);
     }
 
-    if (planeZspeed > 0.0005f) {
+    if (planeZspeed > 0.005f) {
         planeZspeed -= 0.05f * abs(planeZspeed);
         planeTurnRight = true;
         planeTurnLeft = false;
     }
 
-    if (planeZspeed < 0.0005f) {
+    if (planeZspeed < 0.005f) {
         planeZspeed += 0.05f * abs(planeZspeed);
         planeTurnRight = false;
         planeTurnLeft = true;
     }
 
-    if (planeCenterY > -startHeight + groundY / 2.0f + planeWheelSize / 2.0f + planeSizeY / 2.0f) {
-        planeYspeed -= 0.0001f;
+    if (planeCenterY > -startHeight + groundY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f) {
+        planeYspeed -= 0.001f;
     }
 
-    if (planeCenterY < -startHeight + groundY / 2.0f + planeWheelSize / 2.0f + planeSizeY / 2.0f) {
-        planeCenterY = -startHeight + groundY / 2.0f + planeWheelSize / 2.0f + planeSizeY / 2.0f;
-        if (abs(planeYspeed) >= 0.05f) {
+    if (planeCenterY < -startHeight + groundY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f) {
+        planeCenterY = -startHeight + groundY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f;
+        if (abs(planeYspeed) >= 0.5f) {
             crashed = true;
         }
         planeYspeed = -0.1 * planeYspeed;
     }
 
-    if (planeXspeed <= 0.1f && planeXspeed > 0 && planeCenterY > -startHeight + planeSizeY * 2.0f) {
+    if (planeXspeed <= 2.0f && planeXspeed > 0.0 && planeCenterY > -startHeight + groundY / 2.0f + planeWheelSize / 1.0f + planeSizeY * 2.0f) {
         std::cout << "Low Speed!!!" << endl;
     }
 
-    if (planeXspeed <= 0.01f && planeCenterY > -startHeight + planeSizeY * 2.0f) {
+    if (planeXspeed <= 0.7f && planeCenterY > -startHeight + groundY / 2.0f + planeWheelSize / 1.0f + planeSizeY * 2.0f) {
         crashed = true;
     }
 
-    if (abs(planeYspeed) >= 0.04f) {
+    if (abs(planeYspeed) >= 0.4f) {
         crashed = true;
     }
 
-    if (abs(planeXspeed) < 0.005f) { 
+    if (abs(planeXspeed) < 0.05f) { 
         planeXspeed = 0; 
     };
 
-    if (abs(planeZspeed) < 0.0005f) {
+    if (abs(planeZspeed) < 0.005f) {
         planeZspeed = 0;
         planeTurnRight = false;
         planeTurnLeft = false;
     };
 
-    if (abs(planeYspeed) < 0.1 * 0.0001f) { 
+    if (abs(planeYspeed) < 0.1 * 0.001f) { 
         planeYspeed = 0; 
     };
 
@@ -431,20 +468,20 @@ void update(int value) {
     planeCenterY += planeYspeed;
 
     if (crashed == true) {
-        std::cout << "Crashed!!!!!!!!!" << endl;
+        std::cout << "Crashed!!!!!!!!!IDIOT" << endl;
     }
     //std::cout << "__________" << endl;
     //std::cout << planeXspeed << endl;
     //std::cout << planeZspeed << endl;
-    std::cout << planeYspeed << endl;
+    //std::cout << planeYspeed << endl;
 
     switch (fltMode) {
     case 0:
         fltFOV = 70; //Field Of View
         fltZoom = 1.0; //Zoom amount
-        fltX0 = -3.0; //Camera position
-        fltY0 = 3.0;
-        fltZ0 = -3.0;
+        fltX0 = -20.0; //Camera position
+        fltY0 = 20.0;
+        fltZ0 = -20.0;
         fltXRef = 0.0; //Look At reference point
         fltYRef = 0.0;
         fltZRef = 0.0;
@@ -479,7 +516,7 @@ void display() {
 
     drawScene(0.0 - planeCenterX, 0.0 - planeCenterY, 0.0 - planeCenterZ);
     drawPlane(1.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
-    drawEZCube(0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0);
+    drawEZCube(2.0, 2.0, 2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -497,8 +534,8 @@ void init() {
     glDepthFunc(GL_LEQUAL);
     glShadeModel(GL_FLAT);
     glEnable(GL_TEXTURE_2D);
-    ReadImage("plane.bmp", imagewidth0, imageheight0, pixellength0);
-    ReadImage("Lab10Image2.bmp", imagewidth1, imageheight1, pixellength1);
+    ReadImage("plane1.bmp", imagewidth0, imageheight0, pixellength0);
+    ReadImage("plane.bmp", imagewidth1, imageheight1, pixellength1);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // set pixel storage modes (in the memory) 
     glGenTextures(2, &texture[0]);  // number of texture names to be generated and an array of texture names
