@@ -6,7 +6,7 @@
 #include <iostream>
 using namespace std;
 
-float planeSizeX = 1.0f; 
+float planeSizeX = 2.0f; 
 float planeSizeY = 0.2f;
 float planeSizeZ = 0.2f;
 float planeCenterX = 0.0f;
@@ -26,19 +26,19 @@ float groundZ = 500.0;
 
 int frameRate = 60; // Desired frame rate (frames per second)
 
-float fltFOV = 70; //Field Of View
-float fltZoom = 1.0; //Zoom amount
-float fltX0 = -3.0; //Camera position
-float fltY0 = 3.0;
-float fltZ0 = -3.0;
-float fltXRef = 0.0; //Look At reference point
-float fltYRef = 0.0;
-float fltZRef = 0.0;
-float fltXUp = 0.0; //Up vector
-float fltYUp = 1.0;
-float fltZUp = 0.0;
-float fltViewingAngle = 1;
-int fltMode = 0;
+float fltFOV; //Field Of View
+float fltZoom; //Zoom amount
+float fltX0; //Camera position
+float fltY0;
+float fltZ0;
+float fltXRef; //Look At reference point
+float fltYRef;
+float fltZRef;
+float fltXUp; //Up vector
+float fltYUp;
+float fltZUp;
+float fltViewingAngle;
+int fltMode;
 
 
 void setupMaterial(float red, float green, float blue) {
@@ -196,7 +196,10 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
     glEnable(GL_LIGHTING);
 
     // Plane body
-    drawEZCube(planeSizeX * size, planeSizeY * size, planeSizeZ * size, centerX, centerY, centerZ, red, green, blue);
+    drawCube(planeSizeX * size, planeSizeY * size, planeSizeZ * size, centerX, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue);
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * size, centerX + planeSizeX * 0.3, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue);
+    drawCube(planeSizeX * 0.05 * size, planeSizeY * 0.2 * size, planeSizeX * 0.3 * size, centerX - planeSizeX * 0.45, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue);
+    drawCube(planeSizeX * 0.05 * size, planeSizeY * 1.0 * size, planeSizeZ * 0.3 * size, centerX - planeSizeX * 0.45, centerY + planeSizeY * 0.5, centerZ, 0.0, 0.0, 0.0, red, green, blue);
 
     // Draw wheels in cube
     float rotateZ = 1.0;
@@ -215,9 +218,9 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
     };
     //drawCube(0.15 * size, 0.15 * size, 0.05 * size, -planeSizeX * 0.3 * size + centerX, -planeSizeY * 0.5 * size + centerY, -planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
     //drawCube(0.15 * size, 0.15 * size, 0.05 * size, -planeSizeX * 0.3 * size + centerX, -planeSizeY * 0.5 * size + centerY, +planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
-    drawCube(0.15 * size, 0.15 * size, 0.05 * size, +planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, -planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
-    drawCube(0.15 * size, 0.15 * size, 0.05 * size, +planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, +planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
-    drawCube(0.15 * size, 0.15 * size, 0.05 * size, -planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, 0.0, 0.0, 0.0, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
+    drawCube(0.15 * size, 0.15 * size, 0.05 * size, +planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, -planeSizeX * 0.3 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
+    drawCube(0.15 * size, 0.15 * size, 0.05 * size, +planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, +planeSizeX * 0.3 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
+    drawCube(0.15 * size, 0.15 * size, 0.05 * size, -planeSizeX * 0.5 * size + centerX, -planeSizeY * 0.5 * size + centerY, 0.0, 0.0, 0.0, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
 
     glEnd();
 }
@@ -304,7 +307,7 @@ void update(int value) {
     }
 
     if (planeXspeed > 0 && planeCenterY <= -startHeight + planeSizeY * 2.0f) {
-        planeXspeed -= 0.05f * abs(planeXspeed);
+        planeXspeed -= 0.01f * abs(planeXspeed);
     }
 
     if (planeXspeed < 0 && planeCenterY > -startHeight + planeSizeY * 2.0f) {
@@ -312,7 +315,7 @@ void update(int value) {
     }
 
     if (planeXspeed < 0 && planeCenterY <= -startHeight + planeSizeY * 2.0f) {
-        planeXspeed += 0.05f * abs(planeXspeed);
+        planeXspeed += 0.01f * abs(planeXspeed);
     }
 
     if (planeZspeed > 0.0005f) {
@@ -466,3 +469,4 @@ int main(int argc, char** argv) {
 // 背景换位置，开始降落总不能在跑道上
 // 仪表盘，旋转长方形就行
 // 飞机，可考虑螺旋桨，不用画圆
+// X轴上可以考虑用engine实现，不用一直按着
