@@ -8,11 +8,11 @@ using namespace std;
 
 float planeSizeX = 1.0f; 
 float planeSizeY = 0.2f;
-float planeSizeZ = 1.0f;
+float planeSizeZ = 0.2f;
 float planeCenterX = 0.0f;
 float planeCenterY = 0.0f;
 float planeCenterZ = 0.0f;
-float planeXspeed = 0.5f;
+float planeXspeed = 3.0f;
 float planeYspeed = 0.0f;
 float planeZspeed = 0.0f;
 bool planeTurnLeft = false;
@@ -20,7 +20,7 @@ bool planeTurnRight = false;
 bool crashed = false;
 float startHeight = 10.0;
 
-float groundX = 500.0;
+float groundX = 5000.0;
 float groundY = 0.5;
 float groundZ = 500.0;
 
@@ -213,10 +213,11 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
         rotateYangle = 0.0;
         rotateZ = 1.0;
     };
-    drawCube(0.15 * size, 0.15 * size, 0.05 * size, -planeSizeX * 0.3 * size + centerX, -planeSizeY * 0.5 * size + centerY, -planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
-    drawCube(0.15 * size, 0.15 * size, 0.05 * size, -planeSizeX * 0.3 * size + centerX, -planeSizeY * 0.5 * size + centerY, +planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
-    drawCube(0.15 * size, 0.15 * size, 0.05 * size, +planeSizeX * 0.3 * size + centerX, -planeSizeY * 0.5 * size + centerY, -planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
-    drawCube(0.15 * size, 0.15 * size, 0.05 * size, +planeSizeX * 0.3 * size + centerX, -planeSizeY * 0.5 * size + centerY, +planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
+    //drawCube(0.15 * size, 0.15 * size, 0.05 * size, -planeSizeX * 0.3 * size + centerX, -planeSizeY * 0.5 * size + centerY, -planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
+    //drawCube(0.15 * size, 0.15 * size, 0.05 * size, -planeSizeX * 0.3 * size + centerX, -planeSizeY * 0.5 * size + centerY, +planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
+    drawCube(0.15 * size, 0.15 * size, 0.05 * size, +planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, -planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
+    drawCube(0.15 * size, 0.15 * size, 0.05 * size, +planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, +planeSizeZ * 0.5 * size + centerZ, 0.0, rotateYangle, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
+    drawCube(0.15 * size, 0.15 * size, 0.05 * size, -planeSizeX * 0.4 * size + centerX, -planeSizeY * 0.5 * size + centerY, 0.0, 0.0, 0.0, (-distance / 0.15) * rotateZ, 0.2, 0.2, 0.2);
 
     glEnd();
 }
@@ -298,22 +299,30 @@ void handleKeypress(unsigned char key, int x, int y) {
 
 void update(int value) {
     // Update the cube's position based on speed
-    if (planeXspeed > 0) {
-        planeXspeed -= 0.02f * abs(planeXspeed);
+    if (planeXspeed > 0 && planeCenterY > -startHeight + planeSizeY * 2.0f) {
+        planeXspeed -= 0.005f * abs(planeXspeed);
     }
 
-    if (planeXspeed < 0) {
-        planeXspeed += 0.005f;
+    if (planeXspeed > 0 && planeCenterY <= -startHeight + planeSizeY * 2.0f) {
+        planeXspeed -= 0.05f * abs(planeXspeed);
+    }
+
+    if (planeXspeed < 0 && planeCenterY > -startHeight + planeSizeY * 2.0f) {
+        planeXspeed += 0.005f * abs(planeXspeed);
+    }
+
+    if (planeXspeed < 0 && planeCenterY <= -startHeight + planeSizeY * 2.0f) {
+        planeXspeed += 0.05f * abs(planeXspeed);
     }
 
     if (planeZspeed > 0.0005f) {
-        planeZspeed -= 0.02f * abs(planeZspeed);
+        planeZspeed -= 0.05f * abs(planeZspeed);
         planeTurnRight = true;
         planeTurnLeft = false;
     }
 
     if (planeZspeed < 0.0005f) {
-        planeZspeed += 0.01f * abs(planeZspeed);
+        planeZspeed += 0.05f * abs(planeZspeed);
         planeTurnRight = false;
         planeTurnLeft = true;
     }
@@ -324,7 +333,22 @@ void update(int value) {
 
     if (planeCenterY < -startHeight + planeSizeY / 2.0f) {
         planeCenterY = -startHeight + planeSizeY / 2.0f;
+        if (abs(planeYspeed) >= 0.05f) {
+            crashed = true;
+        }
         planeYspeed = -0.1 * planeYspeed;
+    }
+
+    if (abs(planeXspeed) <= 0.1f && planeCenterY > -startHeight + planeSizeY * 2.0f) {
+        std::cout << "Low Speed!!!" << endl;
+    }
+
+    if (abs(planeXspeed) <= 0.01f && planeCenterY > -startHeight + planeSizeY * 2.0f) {
+        crashed = true;
+    }
+
+    if (abs(planeYspeed) >= 0.04f) {
+        crashed = true;
     }
 
     if (abs(planeXspeed) < 0.005f) { 
@@ -345,10 +369,13 @@ void update(int value) {
     planeCenterZ += planeZspeed;
     planeCenterY += planeYspeed;
 
-    std::cout << "__________" << endl;
-    std::cout << planeXspeed << endl;
-    std::cout << planeZspeed << endl;
-    std::cout << planeYspeed << endl;
+    if (crashed == true) {
+        std::cout << "Crashed!!!!!!!!!" << endl;
+    }
+    //std::cout << "__________" << endl;
+    //std::cout << planeXspeed << endl;
+    //std::cout << planeZspeed << endl;
+    //std::cout << planeYspeed << endl;
 
     switch (fltMode) {
     case 0:
