@@ -15,7 +15,7 @@ GLint pixellength0, pixellength1;
 vector<GLubyte*>p;  // Similar to GLubyte* for program 3 but for 2 images (so a vector) 
 GLuint texture[2];
 
-float planeWheelSize = 2.0f;
+float planeWheelSize = 2.0;
 float planeSizeX = 20.0f; 
 float planeSizeY = 2.0f;
 float planeSizeZ = planeSizeY;
@@ -279,11 +279,11 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
     //drawCube(planeSizeX * size, planeSizeY * size, planeSizeZ * size, centerX, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue, texture[0]);
     drawCylinder(planeSizeY, 0, planeSizeX * 0.6, planeSizeX, 0.0, 0.0, 0.0, M_PI / 2, 0.0, 0.0, 0.0, 0.0, texture[0]);
     drawCylinder(planeSizeY, planeSizeY, planeSizeX, 0.0, 0.0, 0.0, 0.0, M_PI / 2, 0.0, 0.0, 0.0, 0.0, texture[0]);
-    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.66 * size, centerX + planeSizeX * 0.5, centerY, centerZ - planeSizeZ * 1.7, 0.0, M_PI / 4, 0.0, red, green, blue, texture[1]);
-    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.66 * size, centerX + planeSizeX * 0.5, centerY, centerZ + planeSizeZ * 1.7, 0.0, -M_PI / 4, 0.0, red, green, blue, texture[1]);
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.66 * size, centerX + planeSizeX * 0.5, centerY, centerZ - planeSizeZ * 1.7, 0.0, M_PI / 4, 0.0, red, green, blue, texture[0]);
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.66 * size, centerX + planeSizeX * 0.5, centerY, centerZ + planeSizeZ * 1.7, 0.0, -M_PI / 4, 0.0, red, green, blue, texture[0]);
 
-    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ - planeSizeZ * 1.0, 0.0, M_PI / 4, 0.0, red, green, blue, texture[1]);
-    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ + planeSizeZ * 1.0, 0.0, -M_PI / 4, 0.0, red, green, blue, texture[1]);
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ - planeSizeZ * 1.0, 0.0, M_PI / 4, 0.0, red, green, blue, texture[0]);
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ + planeSizeZ * 1.0, 0.0, -M_PI / 4, 0.0, red, green, blue, texture[0]);
 
     //drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * size, centerX + planeSizeX * 0.3, centerY, centerZ, 0.0, M_PI / 4, 0.0, red, green, blue, 0);
     //drawCube(planeSizeX * 0.05 * size, planeSizeY * 0.2 * size, planeSizeX * 0.3 * size, centerX - planeSizeX * 0.45, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue, 0);
@@ -291,29 +291,35 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
 
 
     // Draw wheels in cube
-    float rotateZ = 1.0;
+    float rotateZ = 0.0;
+    float rotateZ_first = 0.0;
     float rotateYangle = 0.0;
     bool onGroundEZ = (planeCenterY <= -startHeight + groundY / 2.0f + planeWheelSize / 1.0f + planeSizeY * 1.5f);
     if (planeTurnLeft == true && planeTurnRight == false && onGroundEZ) {
-        rotateYangle = M_PI / 4;
+        rotateYangle = M_PI / 6;
         rotateZ = 0.0;
+        rotateZ_first = 1.0;
     };
     if (planeTurnLeft == false && planeTurnRight == true && onGroundEZ) {
-        rotateYangle = -M_PI / 4;
+        rotateYangle = -M_PI / 6;
         rotateZ = 0.0;
+        rotateZ_first = 1.0;
     };
     if (planeTurnLeft == false && planeTurnRight == false && onGroundEZ) {
         rotateYangle = 0.0;
         rotateZ = 1.0;
+        rotateZ_first = 1.0;
     };
     if (!onGroundEZ) {
         rotateYangle = 0.0;
         rotateZ = 0.0;
+        rotateZ_first = 0.0;
     }
 
-    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, +planeSizeX * 0.55 * size + centerX, -planeSizeY * 0.5 * size - planeWheelSize + centerY, -planeSizeX * 0.25 * size + centerZ, 0.0, rotateYangle, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
-    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, +planeSizeX * 0.55 * size + centerX, -planeSizeY * 0.5 * size - planeWheelSize + centerY, planeSizeX * 0.25 * size + centerZ, 0.0, rotateYangle, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
-    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, planeSizeX * 0.99 * size + centerX, -(planeSizeY) * 0.5 * size - planeWheelSize + centerY, 0.0, 0.0, 0.0, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
+    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, +planeSizeX * 0.55 * size + centerX, -planeSizeY * 0.4 * size - planeWheelSize + centerY, -planeSizeX * 0.25 * size + centerZ, 0.0, rotateYangle, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
+    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, +planeSizeX * 0.55 * size + centerX, -planeSizeY * 0.4 * size - planeWheelSize + centerY, planeSizeX * 0.25 * size + centerZ, 0.0, rotateYangle, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
+
+    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, planeSizeX * 0.99 * size + centerX, -(planeSizeY) * 0.4 * size - planeWheelSize + centerY, 0.0, 0.0, 0.0, (-distance / planeWheelSize) * rotateZ_first, 0.5, 0.5, 0.5, 0);
 
     glEnd();
 }
@@ -343,8 +349,8 @@ void drawScene(float centerX, float centerY, float centerZ) {
     float groundZ = centerZ;
 
     drawGround(groundX, groundY, groundZ);
-    drawDashedLine(groundX, groundY, groundZ - planeSizeZ * 3);
-    drawDashedLine(groundX, groundY, groundZ + planeSizeZ * 3);
+    drawDashedLine(groundX, groundY, groundZ - planeSizeZ * 10.0f);
+    drawDashedLine(groundX, groundY, groundZ + planeSizeZ * 10.0f);
 
 
     drawEZCube(2.0, 2.0, 2.0, groundX, groundY, groundZ, 0.0, 0.0, 1.0, 0); // For background Test
@@ -363,32 +369,42 @@ void handlefltMode() {
 
 void handleKeypress(unsigned char key, int x, int y) {
     switch (key) {
+    case 'E':
     case 'e':
         planeXspeed += 0.2f;
-        planeXspeed = min(planeXspeed, 2.0f);
+        planeXspeed = min(planeXspeed, 30.0f);
         break;
+    case 'D':
     case 'd':
         planeXspeed -= 0.2f;
-        planeXspeed = max(planeXspeed, -2.0f);
+        planeXspeed = max(planeXspeed, -10.0f);
         break;
+    case 'S':
     case 's':
         planeZspeed -= 0.02f;
         planeZspeed = min(planeZspeed, 2.0f);
         break;
+    case 'F':
     case 'f':
         planeZspeed += 0.02f;
         planeZspeed = max(planeZspeed, -2.0f);
         break;
+    case 'A':
     case 'a':
         if (planeXspeed >= 0) {
             planeYspeed += 0.01f;
         }
         break;
+    case 'Z':
     case 'z':
         planeYspeed -= 0.1f;
         break;
     case ' ':
         handlefltMode();
+        break;
+    case 'R':
+    case 'r':
+        glutFullScreenToggle();
         break;
     }
 
@@ -398,7 +414,7 @@ void handleKeypress(unsigned char key, int x, int y) {
 void update(int value) {
     // Update the cube's position based on speed
     if (planeXspeed > 0 && planeCenterY > -startHeight + planeSizeY * 2.0f) {
-        planeXspeed -= 0.005f * abs(planeXspeed);
+        planeXspeed -= 0.01f * abs(planeXspeed);
     }
 
     if (planeXspeed > 0 && planeCenterY <= -startHeight + planeSizeY * 2.0f) {
@@ -477,11 +493,11 @@ void update(int value) {
 
     switch (fltMode) {
     case 0:
-        fltFOV = 70; //Field Of View
+        fltFOV = 100.0; //Field Of View
         fltZoom = 1.0; //Zoom amount
         fltX0 = -20.0; //Camera position
-        fltY0 = 20.0;
-        fltZ0 = -20.0;
+        fltY0 = 30.0;
+        fltZ0 = -0.0;
         fltXRef = 0.0; //Look At reference point
         fltYRef = 0.0;
         fltZRef = 0.0;
@@ -491,7 +507,7 @@ void update(int value) {
         fltViewingAngle = 1;
         break;
     case 1:
-        fltFOV = 70; //Field Of View
+        fltFOV = 100.0; //Field Of View
         fltZoom = 1.0; //Zoom amount
         fltX0 = 0.5; //Camera position
         fltY0 = 0.5;
@@ -529,7 +545,7 @@ void display() {
 }
 
 void init() {
-    glClearColor(0.0, 0.0, 0.15, 1.0);
+    glClearColor(173.0f / 256.0f, 216.0f / 256.0f, 235.0 / 256.0f, 1.0);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glShadeModel(GL_FLAT);
