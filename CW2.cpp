@@ -12,21 +12,21 @@ using namespace std;
 GLint imagewidth0, imagewidth1, imagewidth2;
 GLint imageheight0, imageheight1, imageheight2;
 GLint pixellength0, pixellength1, pixellength2;
-vector<GLubyte*>p;  // Similar to GLubyte* for program 3 but for 2 images (so a vector) 
-GLuint texture[5];
+vector<GLubyte*>p;
+GLuint texture[3];
 
 float planeWheelSize = 2.0;
-float planeSizeX = 20.0f;
+float planeSizeX = 20.0f; // planeSize
 float planeSizeY = 2.0f;
 float planeSizeZ = planeSizeY;
-float planeCenterX = 0.0f;
+float planeCenterX = 0.0f; // plane center point
 float planeCenterY = 0.0f;
 float planeCenterZ = 0.0f;
-float planeXspeed = 20.0f;
+float planeXspeed = 20.0f; // plane speed
 float planeYspeed = 0.0f;
 float planeZspeed = 0.0f;
-float lowXSpeed = 4.0f;
-float crashXSpeed = 0.7f;
+float lowXSpeed = 4.0f; // The plane is about to stall.
+float crashXSpeed = 0.7f; // Aircraft stall speed
 float startHeight = 88.0f;
 bool planeTurnLeft = false;
 bool planeTurnRight = false;
@@ -39,8 +39,8 @@ float groundSizeX = 20000.0f;
 float groundSizeY = 0.5f;
 float zMaxLimit = 150.0f;
 float groundSizeZ = planeSizeZ * zMaxLimit;
-float runwaySpacingFactor = 10.0f;
-float runwayStartX = 1660.0f;
+float AirstripSpacingFactor = 10.0f;
+float AirstripStartX = 1660.0f;
 
 int frameRate = 60; // Desired frame rate (frames per second)
 
@@ -291,7 +291,7 @@ void drawDashboard_X(float size, float centerX, float centerY, float centerZ, fl
         std::cout << "DEBUGGER: Check dashboard!" << endl;
     }
 
-    float angle = M_PI * max(min(var, NumMax), NumMin) / (NumMax - NumMin);
+    float angle = M_PI * max(min(var, NumMax * 0.99f), NumMin) / (NumMax - NumMin);
     if (dangerNum > NumMin && dangerNum < NumMax) {
         angle_danger = M_PI * dangerNum / (NumMax - NumMin);
         dangerLine = true;
@@ -330,6 +330,7 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
 
     drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ - planeSizeZ * 1.0, 0.0, M_PI / 4, 0.0, red, green, blue, texture[0]);
     drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ + planeSizeZ * 1.0, 0.0, -M_PI / 4, 0.0, red, green, blue, texture[0]);
+    drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.2 * size, centerX + planeSizeX * 0.1, centerY + planeSizeX * 0.15, centerZ, M_PI / 2, 0.0, 0.0, red, green, blue, texture[0]);
 
     // Draw wheels in cube
     float rotateZ = 0.0;
@@ -372,10 +373,12 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
         }
     }
 
-
     drawDashboard_X(1.0f, planeSizeX * 1.0f, planeSizeY * 1.0f, 0.0f, 0.0f, 20.0f, lowXSpeed, crashXSpeed, &planeXspeed);
 
-
+    if (crashed && !succeedReported && !is_static) {
+        drawCube(0.5f, planeSizeX, 0.5f, planeSizeX / 2.0f + centerX, centerY, centerZ, M_PI / 4.0f, 0.0, 0.0, 1.0, 0.0, 0.0, 0);
+        drawCube(0.5f, planeSizeX, 0.5f, planeSizeX / 2.0f + centerX, centerY, centerZ, -M_PI / 4.0f, 0.0, 0.0, 1.0, 0.0, 0.0, 0);
+    }
 
     glEnd();
 }
@@ -388,7 +391,7 @@ void drawBeforeGreenGround(float centerX, float centerY, float centerZ) {
     float r = 0.0;
     float g = 0.5;
     float b = 0.0;
-    drawCube(runwayStartX, groundSizeY * 1.1f, groundSizeZ, centerX + runwayStartX / 2.0f, centerY, centerZ, 0.0, 0.0, 0.0, r, g, b, -1);
+    drawCube(AirstripStartX, groundSizeY * 1.1f, groundSizeZ, centerX + AirstripStartX / 2.0f, centerY, centerZ, 0.0, 0.0, 0.0, r, g, b, -1);
 }
 
 void drawLine(float centerX, float centerY, float centerZ, float DashedLineX, float DashedLineY, float DashedLineZ, bool isDashedLine) {
@@ -396,12 +399,12 @@ void drawLine(float centerX, float centerY, float centerZ, float DashedLineX, fl
     float g = 0.9;
     float b = 0.9;
     if (isDashedLine) {
-        for (float X = runwayStartX; X < groundSizeX / 2.0f; X += 15.0f) {
+        for (float X = AirstripStartX; X < groundSizeX / 2.0f; X += 15.0f) {
             drawCube(DashedLineX, DashedLineY, DashedLineZ, X + centerX, centerY, centerZ, 0.0, 0.0, 0.0, r, g, b, 0);
         }
     }
     else {
-        for (float X = runwayStartX; X < groundSizeX / 2.0f; X += DashedLineX * 1.0f) {
+        for (float X = AirstripStartX; X < groundSizeX / 2.0f; X += DashedLineX * 1.0f) {
             drawCube(DashedLineX, DashedLineY, DashedLineZ, X + centerX, centerY, centerZ, 0.0, 0.0, 0.0, r, g, b, 0);
         }
     }
@@ -412,7 +415,7 @@ void drawGrassland(float centerX, float centerY, float centerZ , float GrassLand
     float r = 0.0;
     float g = 0.5;
     float b = 0.0;
-    for (float X = runwayStartX; X < groundSizeX / 2.0f; X += GrassIntervalX) {
+    for (float X = AirstripStartX; X < groundSizeX / 2.0f; X += GrassIntervalX) {
         for (float Z = -GrassIntervalZ * (numberOfGrassLandZ + 0.5); Z < GrassIntervalZ * (numberOfGrassLandZ + 0.5); Z += GrassIntervalZ) {
             drawCube(GrassLandX, GrassLandY, GrassLandZ, X + centerX, centerY, Z + centerZ, 0.0, 0.0, 0.0, r, g, b, texture[2]);
         }
@@ -430,6 +433,7 @@ void drawClouds(float centerX, float centerY, float centerZ) {
 
     for (float X = 0.0f; X < groundSizeX / 2.0f; X += interval) {
         for (float Z = -planeSizeZ * zMaxLimit; Z < planeSizeZ * zMaxLimit; Z += interval) {
+            // Like a stack
             drawCube(cloudSizeX * 1.00f, cloudSizeY, cloudSizeZ * 1.00f, X + centerX, centerY + cloudSizeY * 0.0f, Z + centerZ, 0.0, 0.0, 0.0, r * 0.85f, g * 0.85f, b * 0.85f, 0);
             drawCube(cloudSizeX * 0.87f, cloudSizeY, cloudSizeZ * 0.87f, X + centerX, centerY + cloudSizeY * 1.0f, Z + centerZ, 0.0, 0.0, 0.0, r * 0.9f, g * 0.9f, b * 0.9f, 0);
             drawCube(cloudSizeX * 0.71f, cloudSizeY, cloudSizeZ * 0.71f, X + centerX, centerY + cloudSizeY * 2.0f, Z + centerZ, 0.0, 0.0, 0.0, r * 0.95f, g * 0.95f, b * 0.95f, 0);
@@ -450,41 +454,40 @@ void drawScene(float centerX, float centerY, float centerZ) {
     float GrassLandX = 100.0f;
     float GrassLandY = 0.55f;
     float GrassLandZ = 50.0f;
-    float GrassIntervalX = GrassLandX + planeSizeZ * runwaySpacingFactor;
-    float GrassIntervalZ = GrassLandZ + DashedLineZ + 2 * planeSizeZ * runwaySpacingFactor;
+    float GrassIntervalX = GrassLandX + planeSizeZ * AirstripSpacingFactor;
+    float GrassIntervalZ = GrassLandZ + DashedLineZ + 2 * planeSizeZ * AirstripSpacingFactor;
     float numberOfGrassLandZ = 2.0f;
 
     drawGround(groundX, groundY, groundZ, 0.1, 0.1, 0.1);
     drawCube(groundSizeX * 100.0f, groundSizeY * 0.5f, groundSizeZ * 10.0f, groundX, groundY - groundSizeY * 10.0f, groundZ, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, -1);
-    //drawCube(runwayStartX / 10.0f, groundSizeY * 1.1f, groundSizeZ, groundX, groundY, groundZ, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, -1);
     drawBeforeGreenGround(groundX, groundY, groundZ);
     drawGrassland(groundX, groundY, groundZ, GrassLandX, GrassLandY, GrassLandZ, GrassIntervalX, GrassIntervalZ, numberOfGrassLandZ);
 
-    // Central runway
+    // Central Airstrip
     drawLine(groundX, groundY, groundZ, DashedLineX, DashedLineY, DashedLineZ, true);
-    drawLine(groundX, groundY, groundZ - planeSizeZ * runwaySpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
-    drawLine(groundX, groundY, groundZ + planeSizeZ * runwaySpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
+    drawLine(groundX, groundY, groundZ - planeSizeZ * AirstripSpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
+    drawLine(groundX, groundY, groundZ + planeSizeZ * AirstripSpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
 
-    // -1 runway
-    drawLine(groundX, groundY, groundZ - (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, DashedLineX, DashedLineY, DashedLineZ, true);
-    drawLine(groundX, groundY, groundZ - (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f - planeSizeZ * runwaySpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
-    drawLine(groundX, groundY, groundZ - (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f + planeSizeZ * runwaySpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
+    // -1 Airstrip
+    drawLine(groundX, groundY, groundZ - (planeSizeZ * AirstripSpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, DashedLineX, DashedLineY, DashedLineZ, true);
+    drawLine(groundX, groundY, groundZ - (planeSizeZ * AirstripSpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f - planeSizeZ * AirstripSpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
+    drawLine(groundX, groundY, groundZ - (planeSizeZ * AirstripSpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f + planeSizeZ * AirstripSpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
 
-    // +1 runway
-    drawLine(groundX, groundY, groundZ + (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, DashedLineX, DashedLineY, DashedLineZ, true);
-    drawLine(groundX, groundY, groundZ + (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f - planeSizeZ * runwaySpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
-    drawLine(groundX, groundY, groundZ + (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f + planeSizeZ * runwaySpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
+    // +1 Airstrip
+    drawLine(groundX, groundY, groundZ + (planeSizeZ * AirstripSpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, DashedLineX, DashedLineY, DashedLineZ, true);
+    drawLine(groundX, groundY, groundZ + (planeSizeZ * AirstripSpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f - planeSizeZ * AirstripSpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
+    drawLine(groundX, groundY, groundZ + (planeSizeZ * AirstripSpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f + planeSizeZ * AirstripSpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
 
     drawClouds(groundX, groundY + startHeight * 0.6f, groundZ);
 
-    // -1 runway static plane
-    for (float X = groundX + runwayStartX + 2000.0f; X <= groundX + runwayStartX + 3000.0f; X += 100.0f) {
-        drawPlane(1.0, X, groundY + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f, groundZ - (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, 0.5, 0.5, 0.5, true);
+    // -1 Airstrip static plane
+    for (float X = groundX + AirstripStartX + 2000.0f; X <= groundX + AirstripStartX + 3000.0f; X += 100.0f) {
+        drawPlane(1.0, X, groundY + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f, groundZ - (planeSizeZ * AirstripSpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, 0.5, 0.5, 0.5, true);
     }
 
-    // +1 runway staticplane
-    for (float X = groundX + runwayStartX + 100.0f; X <= groundX + runwayStartX + 1000.0f; X += 100.0f) {
-        drawPlane(1.0, X, groundY + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f, groundZ + (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, 0.5, 0.5, 0.5, true);
+    // +1 Airstrip staticplane
+    for (float X = groundX + AirstripStartX + 100.0f; X <= groundX + AirstripStartX + 1000.0f; X += 100.0f) {
+        drawPlane(1.0, X, groundY + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f, groundZ + (planeSizeZ * AirstripSpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, 0.5, 0.5, 0.5, true);
     }
 }
 
@@ -660,11 +663,11 @@ void updatePlane() {
         flyPastReported = true;
     }
 
-    if (abs(planeCenterZ) >= planeSizeZ * runwaySpacingFactor && 
+    if (abs(planeCenterZ) >= planeSizeZ * AirstripSpacingFactor && 
         planeCenterY < -startHeight + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY * 2.0f && 
         !succeedReported) {
         if (!flyPastReported) {
-            std::cout << "You flew off the runway! Fail!" << std::endl;
+            std::cout << "You flew off the airstrip! Fail!" << std::endl;
         }
         crashed = true;
         flyPastReported = true;
@@ -707,12 +710,6 @@ void updatePlane() {
         
         succeedReported = true;
     }
-
-    //std::cout << "__________" << endl;
-    //std::cout << planeXspeed << endl;
-    //std::cout << planeZspeed << endl;
-    //std::cout << planeYspeed << endl;
-    //std::cout << planeCenterX << endl;
 }
 
 void update(int value) {
@@ -806,9 +803,9 @@ void display() {
 
 void consoleInit() {
     std::cout << "Please Read the following instruction:" << endl;
-    std::cout << "Your mission is to land a plane smoothly on the airport runway." << endl;
+    std::cout << "Your mission is to land a plane smoothly on the airport airstrip." << endl;
     std::cout << "If not handled properly, the plane will crash." << endl;
-    std::cout << "(For example, forward speed was too slow, landing speed was too high, or it flew off the runway.)" << endl;
+    std::cout << "(For example, forward speed was too slow, landing speed was too high, or it flew off the airstrip.)" << endl;
     std::cout << "(For your own good experience, you can continue to fly freely even if you crash.)" << endl;
     std::cout << "___________________________________________" << endl;
     std::cout << "Note: " << endl;
@@ -819,6 +816,7 @@ void consoleInit() {
     std::cout << "The SPACE key is used to START the game or SWITCH to another person's perspective." << endl;
     std::cout << " " << endl;
     std::cout << "There is a dashboard under the first-person view to visually display the forward speed." << endl;
+    std::cout << "The red line on the instrument panel represents the stall speed, the yellow line represents the impending stall warning, and the green line represents the current speed." << endl;
     std::cout << "My suggestion: try both perspectives, the third person may be easier." << endl;
     std::cout << "Tip: You can actually land smoothly by just pressing the E and A keys intermittently. But it's always good to try." << endl;
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
@@ -868,12 +866,12 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(800, 600);
-    glutCreateWindow("CW2");
+    glutCreateWindow("Assessment2");
     glutDisplayFunc(display);
     glutKeyboardFunc(handleKeypress);
 
     init();
-    initLighting(); // Initialize lighting with two point light sources
+    initLighting();
 
     glutTimerFunc(0, update, 0); // Start the update function immediately
 
@@ -881,12 +879,3 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-
-// 光照
-// 坠毁测试
-// 背景换位置，开始降落总不能在跑道上
-// 仪表盘，旋转长方形就行
-// 飞机，可考虑螺旋桨，不用画圆
-// X轴上可以考虑用engine实现，不用一直按着
-// 
-// R键盘重启游戏，开局提示可以多次提示
