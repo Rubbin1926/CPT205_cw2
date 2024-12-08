@@ -323,19 +323,13 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
     glEnable(GL_LIGHTING);
 
     // Plane body
-    //drawCube(planeSizeX * size, planeSizeY * size, planeSizeZ * size, centerX, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue, texture[0]);
-    drawCylinder(planeSizeY, 0, planeSizeX * 0.6, planeSizeX * 0.77, 0.0, 0.0, 0.0, M_PI / 2, 0.0, 0.0, 0.0, 0.0, texture[0]);
+    drawCylinder(planeSizeY, 0, planeSizeX * 0.6, centerX + planeSizeX * 0.77, centerY, centerZ, 0.0, M_PI / 2, 0.0, 0.0, 0.0, 0.0, texture[0]);
     drawCylinder(planeSizeY, planeSizeY, planeSizeX, centerX, centerY, centerZ, 0.0, M_PI / 2, 0.0, 0.0, 0.0, 0.0, texture[0]);
     drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.66 * size, centerX + planeSizeX * 0.5, centerY, centerZ - planeSizeZ * 1.7, 0.0, M_PI / 4, 0.0, red, green, blue, texture[0]);
     drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.66 * size, centerX + planeSizeX * 0.5, centerY, centerZ + planeSizeZ * 1.7, 0.0, -M_PI / 4, 0.0, red, green, blue, texture[0]);
 
     drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ - planeSizeZ * 1.0, 0.0, M_PI / 4, 0.0, red, green, blue, texture[0]);
     drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * 0.4 * size, centerX + planeSizeX * 0.1, centerY, centerZ + planeSizeZ * 1.0, 0.0, -M_PI / 4, 0.0, red, green, blue, texture[0]);
-
-    //drawCube(planeSizeX * 0.1 * size, planeSizeY * 0.2 * size, planeSizeX * size, centerX + planeSizeX * 0.3, centerY, centerZ, 0.0, M_PI / 4, 0.0, red, green, blue, 0);
-    //drawCube(planeSizeX * 0.05 * size, planeSizeY * 0.2 * size, planeSizeX * 0.3 * size, centerX - planeSizeX * 0.45, centerY, centerZ, 0.0, 0.0, 0.0, red, green, blue, 0);
-    //drawCube(planeSizeX * 0.05 * size, planeSizeY * 1.0 * size, planeSizeZ * 0.3 * size, centerX - planeSizeX * 0.45, centerY + planeSizeY * 0.5, centerZ, 0.0, 0.0, 0.0, red, green, blue, 0);
-
 
     // Draw wheels in cube
     float rotateZ = 0.0;
@@ -366,7 +360,7 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
     drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, +planeSizeX * 0.55 * size + centerX, -planeSizeY * 0.4 * size - planeWheelSize + centerY, -planeSizeX * 0.25 * size + centerZ, 0.0, rotateYangle, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
     drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, +planeSizeX * 0.55 * size + centerX, -planeSizeY * 0.4 * size - planeWheelSize + centerY, planeSizeX * 0.25 * size + centerZ, 0.0, rotateYangle, (-distance / planeWheelSize) * rotateZ, 0.5, 0.5, 0.5, 0);
 
-    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, planeSizeX * 0.99 * size + centerX, -(planeSizeY) * 0.4 * size - planeWheelSize + centerY, 0.0, 0.0, 0.0, (-distance / planeWheelSize) * rotateZ_first, 0.5, 0.5, 0.5, 0);
+    drawCube(planeWheelSize * size, planeWheelSize * size, 0.5 * size, +planeSizeX * 0.99 * size + centerX, -planeSizeY * 0.4 * size - planeWheelSize + centerY, centerZ, 0.0, 0.0, (-distance / planeWheelSize) * rotateZ_first, 0.5, 0.5, 0.5, 0);
 
 
     // Fire
@@ -378,9 +372,9 @@ void drawPlane(float size, float centerX, float centerY, float centerZ, float re
         }
     }
 
-    if (GameMode == 0 || GameMode == 2) {
-        drawDashboard_X(1.0f, planeSizeX * 1.0f, planeSizeY * 1.0f, 0.0f, 0.0f, 20.0f, lowXSpeed, crashXSpeed, &planeXspeed);
-    }
+
+    drawDashboard_X(1.0f, planeSizeX * 1.0f, planeSizeY * 1.0f, 0.0f, 0.0f, 20.0f, lowXSpeed, crashXSpeed, &planeXspeed);
+
 
 
     glEnd();
@@ -436,7 +430,10 @@ void drawClouds(float centerX, float centerY, float centerZ) {
 
     for (float X = 0.0f; X < groundSizeX / 2.0f; X += interval) {
         for (float Z = -planeSizeZ * zMaxLimit; Z < planeSizeZ * zMaxLimit; Z += interval) {
-            drawCube(cloudSizeX, cloudSizeY, cloudSizeZ, X + centerX, centerY, Z + centerZ, 0.0, 0.0, 0.0, r, g, b, 0);
+            drawCube(cloudSizeX * 1.00f, cloudSizeY, cloudSizeZ * 1.00f, X + centerX, centerY + cloudSizeY * 0.0f, Z + centerZ, 0.0, 0.0, 0.0, r * 0.85f, g * 0.85f, b * 0.85f, 0);
+            drawCube(cloudSizeX * 0.87f, cloudSizeY, cloudSizeZ * 0.87f, X + centerX, centerY + cloudSizeY * 1.0f, Z + centerZ, 0.0, 0.0, 0.0, r * 0.9f, g * 0.9f, b * 0.9f, 0);
+            drawCube(cloudSizeX * 0.71f, cloudSizeY, cloudSizeZ * 0.71f, X + centerX, centerY + cloudSizeY * 2.0f, Z + centerZ, 0.0, 0.0, 0.0, r * 0.95f, g * 0.95f, b * 0.95f, 0);
+            drawCube(cloudSizeX * 0.50f, cloudSizeY, cloudSizeZ * 0.50f, X + centerX, centerY + cloudSizeY * 3.0f, Z + centerZ, 0.0, 0.0, 0.0, r, g, b, 0);
         }
     }
 }
@@ -479,25 +476,30 @@ void drawScene(float centerX, float centerY, float centerZ) {
     drawLine(groundX, groundY, groundZ + (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f + planeSizeZ * runwaySpacingFactor, DashedLineX, DashedLineY, DashedLineZ, false);
 
     drawClouds(groundX, groundY + startHeight * 0.6f, groundZ);
-    
-    for (float X = groundX + runwayStartX + 100.0f; X <= groundX + runwayStartX + 1000.0f; X += 100.0f) {
-        drawPlane(1.0, X, groundY + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f, groundZ + (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, 0.5, 0.5, 0.5, true);
+
+    // -1 runway static plane
+    for (float X = groundX + runwayStartX + 2000.0f; X <= groundX + runwayStartX + 3000.0f; X += 100.0f) {
+        drawPlane(1.0, X, groundY + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f, groundZ - (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, 0.5, 0.5, 0.5, true);
     }
 
-    for (float X = groundX + runwayStartX + 2000.0f; X <= groundX + runwayStartX + 2500.0f; X += 100.0f) {
-        drawPlane(1.0, X, groundY + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f, groundZ - (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, 0.5, 0.5, 0.5, true);
+    // +1 runway staticplane
+    for (float X = groundX + runwayStartX + 100.0f; X <= groundX + runwayStartX + 1000.0f; X += 100.0f) {
+        drawPlane(1.0, X, groundY + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f, groundZ + (planeSizeZ * runwaySpacingFactor * 2.0f + GrassLandZ + DashedLineZ) * 1.0f, 0.5, 0.5, 0.5, true);
     }
 }
 
 void handleGameMode() {
     switch (GameMode) {
     case 0:
-        GameMode = 2;
+        GameMode = 1;
         break;
     case 1:
         GameMode = 2;
         break;
     case 2:
+        GameMode = 3;
+        break;
+    case 3:
         GameMode = 1;
         break;
     }
@@ -576,6 +578,8 @@ void handleKeypress(unsigned char key, int x, int y) {
     case 'R':
     case 'r':
         Restart();
+        break;
+    default:
         break;
     }
 
@@ -691,12 +695,13 @@ void updatePlane() {
         crashReported = true;
     }
 
-    if (planeCenterY <= -startHeight + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f &&
+    if (planeCenterY == -startHeight + groundSizeY / 2.0f + planeWheelSize / 1.0f + planeSizeY / 1.0f &&
         !crashed &&
         !succeedReported) {
         std::cout << "///////////////////////////////////////////" << endl;
         std::cout << "You succeed! Congratulations!" << endl;
         std::cout << "You cleared it in only " << RestartTimes + 1 << " try!" << endl;
+        std::cout << "You may fly freely to explore." << endl;
         std::cout << "Please give the game a thumbs up!" << endl;
         std::cout << "b（￣▽￣）d" << endl;
         
@@ -720,6 +725,20 @@ void update(int value) {
     case 0:
         fltFOV = 100.0; //Field Of View
         fltZoom = 1.0; //Zoom amount
+        fltX0 = -20.0; //Camera position
+        fltY0 = 20.0;
+        fltZ0 = -0.0;
+        fltXRef = 0.0; //Look At reference point
+        fltYRef = 0.0;
+        fltZRef = 0.0;
+        fltXUp = -0.5; //Up vector
+        fltYUp = 1.0;
+        fltZUp = -0.0;
+        fltViewingAngle = 1;
+        break;
+    case 1:
+        fltFOV = 100.0; //Field Of View
+        fltZoom = 1.0; //Zoom amount
         fltX0 = planeSizeX * 0.8; //Camera position
         fltY0 = planeSizeY * 1.5;
         fltZ0 = 0.0;
@@ -731,7 +750,7 @@ void update(int value) {
         fltZUp = -0.0;
         fltViewingAngle = 1;
         break;
-    case 1:
+    case 2:
         fltFOV = 100.0; //Field Of View
         fltZoom = 1.0; //Zoom amount
         fltX0 = -20.0; //Camera position
@@ -745,18 +764,18 @@ void update(int value) {
         fltZUp = -0.0;
         fltViewingAngle = 1;
         break;
-    case 2:
+    case 3:
         fltFOV = 100.0; //Field Of View
         fltZoom = 1.0; //Zoom amount
-        fltX0 = planeSizeX * 0.8; //Camera position
-        fltY0 = planeSizeY * 1.5;
-        fltZ0 = 0.0;
-        fltXRef = groundSizeX; //Look At reference point
-        fltYRef = 0.5;
+        fltX0 = -25.0; //Camera position
+        fltY0 = 20.0;
+        fltZ0 = -15.0;
+        fltXRef = 0.0; //Look At reference point
+        fltYRef = 0.0;
         fltZRef = 0.0;
-        fltXUp = -0.5; //Up vector
+        fltXUp = 0.0; //Up vector
         fltYUp = 1.0;
-        fltZUp = -0.0;
+        fltZUp = 0.0;
         fltViewingAngle = 1;
         break;
     }
